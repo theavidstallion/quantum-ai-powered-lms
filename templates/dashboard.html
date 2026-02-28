@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Quantum LMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="user-avatar">{{ username[0].upper() }}{{ username[1].upper() if username|length > 1 else '' }}</div>
+            <div class="user-name">{{ username }}</div>
+            <div class="user-role">{{ role }}</div>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/dashboard" class="active">📊 Dashboard</a></li>
+            <li><a href="#grades">📝 My Grades</a></li>
+            <li><a href="#video-generator">🎬 Video Generator</a></li>
+            <li><a href="#chatbot">🤖 Chatbot</a></li>
+            <li><a href="#feedback">💬 Feedback</a></li>
+            <li><a href="/logout">🚪 Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Student Dashboard</h1>
+            <p>Welcome back, {{ username }}!</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Courses</div>
+                <div class="stat-value">{{ grades|length if grades else 0 }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Current Rank</div>
+                <div class="stat-value">
+                    {% if ranking %}
+                        #{{ ranking[0] }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Final Score</div>
+                <div class="stat-value">
+                    {% if ranking %}
+                        {{ "%.1f"|format(ranking[1]) }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Sentiment</div>
+                <div class="stat-value" style="font-size: 18px;">
+                    {% if ranking %}
+                        {% if ranking[2] == 'positive' %}
+                            <span class="stat-badge badge-positive">{{ ranking[2].upper() }}</span>
+                        {% elif ranking[2] == 'negative' %}
+                            <span class="stat-badge badge-negative">{{ ranking[2].upper() }}</span>
+                        {% else %}
+                            <span class="stat-badge badge-neutral">{{ ranking[2].upper() }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span style="font-size: 14px; color: var(--text-muted);">Not ranked yet</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- My Grades -->
+        <div class="card" id="grades">
+            <div class="card-header">
+                <h2 class="card-title">📝 My Grades</h2>
+            </div>
+            {% if grades %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Assessment</th>
+                        <th>Score</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade in grades %}
+                    <tr>
+                        <td>{{ grade[0] }}</td>
+                        <td>{{ grade[1] }}</td>
+                        <td>{{ grade[2] }}</td>
+                        <td>
+                            {% set grade_letter = grade[3]|upper %}
+                            {% if grade_letter.startswith('A') %}
+                                <span class="grade-a">{{ grade[3] }}</span>
+                            {% elif grade_letter.startswith('B') %}
+                                <span class="grade-b">{{ grade[3] }}</span>
+                            {% elif grade_letter.startswith('C') %}
+                                <span class="grade-c">{{ grade[3] }}</span>
+                            {% else %}
+                                <span class="grade-d">{{ grade[3] }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="padding: 20px; color: var(--text-muted);">No grades available yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Chatbot Widget -->
+        <div class="card" id="chatbot">
+            <div class="card-header">
+                <h2 class="card-title">🤖 Quantum Assistant</h2>
+            </div>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message bot">
+                        <div class="message-bubble">
+                            Hello {{ username }}! I'm your Quantum Assistant. How can I help you today?
+                        </div>
+                    </div>
+                </div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="message-bubble">Typing...</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="Ask me anything..." />
+                    <button class="btn btn-primary" id="sendBtn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Video Generator -->
+        <div class="card" id="video-generator">
+            <div class="card-header">
+                <h2 class="card-title">🎬 AI Video Generator</h2>
+            </div>
+            <p style="padding: 0 20px; color: var(--text-muted); margin-bottom: 15px;">
+                Generate educational videos with AI-powered animations and narration on any topic!
+            </p>
+            <form id="videoRequestForm">
+                <label>Topic</label>
+                <input type="text" id="videoTopic" placeholder="e.g., Pythagorean Theorem, Binary Search, Gradient Descent..." required />
+
+                <label>Description (Optional)</label>
+                <textarea id="videoDescription" rows="3" placeholder="Add any specific details you want covered..."></textarea>
+
+                <button type="submit" class="btn btn-primary">🚀 Generate Video</button>
+                <div id="videoRequestMsg" style="margin-top: 10px; display: none;"></div>
+            </form>
+
+            <div style="padding: 20px;">
+                <h3 style="color: var(--accent-cyan); margin-bottom: 15px;">📹 My Videos</h3>
+                <div id="videosList" style="display: flex; flex-direction: column; gap: 10px;">
+                    <p style="color: var(--text-muted);">Loading videos...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Feedback -->
+        <div class="card" id="feedback">
+            <div class="card-header">
+                <h2 class="card-title">💬 Submit Teacher Feedback</h2>
+            </div>
+            <form id="feedbackForm">
+                <label>Teacher</label>
+                <select id="teacher" required>
+                    <option value="">Select a teacher</option>
+                    <option value="Dr. Fatima Tariq">Dr. Fatima Tariq</option>
+                    <option value="Mr. Zunnurain">Mr. Zunnurain</option>
+                    <option value="Ms. Ayesha">Ms. Ayesha</option>
+                </select>
+
+                <label>Rating</label>
+                <select id="rating" required>
+                    <option value="">Select rating</option>
+                    <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
+                    <option value="4">⭐⭐⭐⭐ (4 - Good)</option>
+                    <option value="3">⭐⭐⭐ (3 - Average)</option>
+                    <option value="2">⭐⭐ (2 - Below Average)</option>
+                    <option value="1">⭐ (1 - Poor)</option>
+                </select>
+
+                <label>Comment</label>
+                <textarea id="comment" rows="4" placeholder="Share your feedback..." required></textarea>
+
+                <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                <div id="feedbackMsg" style="margin-top: 10px; display: none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Security Info Bar -->
+    <div class="security-bar">
+        <span>🌐 Your IP: {{ ip }}</span>
+        <span class="status-text">🔒 Quantum Session Active</span>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Chatbot functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        function addMessage(text, isUser) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${isUser ? 'user' : 'bot'}`;
+            msgDiv.innerHTML = `<div class="message-bubble">${text}</div>`;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            chatInput.value = '';
+            sendBtn.disabled = true;
+            typingIndicator.classList.add('active');
+
+            const response = await fetchJSON('/chatbot', {
+                method: 'POST',
+                body: JSON.stringify({ message })
+            });
+
+            typingIndicator.classList.remove('active');
+            sendBtn.disabled = false;
+
+            if (response && response.response) {
+                addMessage(response.response, false);
+            } else {
+                addMessage('Sorry, I encountered an error. Please try again.', false);
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Feedback form functionality
+        const feedbackForm = document.getElementById('feedbackForm');
+        feedbackForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const teacher = document.getElementById('teacher').value;
+            const rating = document.getElementById('rating').value;
+            const comment = document.getElementById('comment').value;
+
+            const response = await fetchJSON('/submit_feedback', {
+                method: 'POST',
+                body: JSON.stringify({ teacher, rating, comment })
+            });
+
+            if (response && response.success) {
+                showMessage('feedbackMsg', 'Feedback submitted successfully!');
+                feedbackForm.reset();
+                setTimeout(() => hideMessage('feedbackMsg'), 3000);
+            } else {
+                showMessage('feedbackMsg', 'Error submitting feedback. Please try again.', true);
+            }
+        });
+
+        // Video Generation functionality
+        const videoRequestForm = document.getElementById('videoRequestForm');
+        const videosList = document.getElementById('videosList');
+
+        async function loadVideos() {
+            const videos = await fetchJSON('/my_videos');
+            
+            if (!videos || videos.length === 0) {
+                videosList.innerHTML = '<p style="color: var(--text-muted);">No videos generated yet. Request your first video above!</p>';
+                return;
+            }
+
+            videosList.innerHTML = '';
+            videos.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.style.cssText = 'padding: 15px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;';
+                
+                let statusBadge = '';
+                let downloadBtn = '';
+                
+                if (video.status === 'completed') {
+                    statusBadge = '<span style="color: var(--accent-green); font-weight: bold;">✅ COMPLETED</span>';
+                    downloadBtn = `<a href="/download_video/${video.id}" class="btn btn-primary" style="display: inline-block; padding: 8px 16px; margin-top: 10px; font-size: 14px;">📥 Download Video</a>`;
+                } else if (video.status === 'processing') {
+                    statusBadge = '<span style="color: var(--accent-cyan); font-weight: bold;">⏳ PROCESSING...</span>';
+                } else if (video.status === 'failed') {
+                    statusBadge = '<span style="color: var(--error); font-weight: bold;">❌ FAILED</span>';
+                    if (video.error_message) {
+                        downloadBtn = `<p style="color: var(--error); font-size: 12px; margin-top: 8px;">Error: ${video.error_message}</p>`;
+                    }
+                } else {
+                    statusBadge = '<span style="color: var(--text-muted); font-weight: bold;">⏸️ PENDING</span>';
+                }
+                
+                videoCard.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h4 style="color: var(--accent-cyan); margin-bottom: 8px;">${video.topic}</h4>
+                            ${video.description ? `<p style="color: var(--text-muted); font-size: 14px; margin-bottom: 8px;">${video.description}</p>` : ''}
+                            <p style="font-size: 12px; color: var(--text-muted);">Requested: ${video.requested_at}</p>
+                            ${video.completed_at ? `<p style="font-size: 12px; color: var(--text-muted);">Completed: ${video.completed_at}</p>` : ''}
+                        </div>
+                        <div>${statusBadge}</div>
+                    </div>
+                    ${downloadBtn}
+                `;
+                
+                videosList.appendChild(videoCard);
+            });
+        }
+
+        videoRequestForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const topic = document.getElementById('videoTopic').value.trim();
+            const description = document.getElementById('videoDescription').value.trim();
+
+            if (!topic) return;
+
+            const submitBtn = videoRequestForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Generating...';
+
+            const response = await fetchJSON('/request_video', {
+                method: 'POST',
+                body: JSON.stringify({ topic, description })
+            });
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = '🚀 Generate Video';
+
+            if (response && response.success) {
+                showMessage('videoRequestMsg', `Video generation started! This may take 2-5 minutes. The video will appear below when ready.`);
+                videoRequestForm.reset();
+                setTimeout(() => hideMessage('videoRequestMsg'), 5000);
+                
+                // Reload videos list after 3 seconds
+                setTimeout(() => loadVideos(), 3000);
+                
+                // Poll for updates every 10 seconds
+                const pollInterval = setInterval(async () => {
+                    const videos = await fetchJSON('/my_videos');
+                    const thisVideo = videos.find(v => v.id === response.request_id);
+                    if (thisVideo && (thisVideo.status === 'completed' || thisVideo.status === 'failed')) {
+                        clearInterval(pollInterval);
+                        loadVideos();
+                    }
+                }, 10000);
+            } else {
+                showMessage('videoRequestMsg', response.message || 'Error requesting video. Please try again.', true);
+            }
+        });
+
+        // Load videos on page load
+        loadVideos();
+    </script>
+</body>
+</html>

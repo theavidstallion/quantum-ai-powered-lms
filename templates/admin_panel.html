@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Quantum LMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="user-avatar">AD</div>
+            <div class="user-name">Administrator</div>
+            <div class="user-role">Admin</div>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/admin_panel" class="active">📊 Overview</a></li>
+            <li><a href="#users">👥 Users</a></li>
+            <li><a href="#rankings">🏆 Rankings</a></li>
+            <li><a href="#alerts">🚨 Alerts</a></li>
+            <li><a href="#videos">🎬 Videos</a></li>
+            <li><a href="#courses">📚 Courses</a></li>
+            <li><a href="#feedback">💬 Feedback</a></li>
+            <li><a href="/logout">🚪 Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Admin Panel</h1>
+            <p>System Management & Analytics</p>
+        </div>
+
+        <!-- Overview Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Users</div>
+                <div class="stat-value">{{ users|length }}</div>
+                <div class="stat-badge badge-cyan">Active</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Feedback</div>
+                <div class="stat-value">{{ feedback|length }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Alerts</div>
+                <div class="stat-value">{{ alerts|length }}</div>
+                <div class="stat-badge badge-high">Critical</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Students Ranked</div>
+                <div class="stat-value">{{ rankings|length }}</div>
+            </div>
+        </div>
+
+        <!-- Anomaly Alerts Panel -->
+        <div class="card" id="alerts">
+            <div class="card-header">
+                <h2 class="card-title">🚨 Security Alerts 
+                    {% if alerts|length > 0 %}
+                        <span class="stat-badge badge-high" style="margin-left: 10px;">{{ alerts|length }}</span>
+                    {% endif %}
+                </h2>
+            </div>
+            {% if alerts %}
+                <div id="alertsContainer">
+                    {% for alert in alerts %}
+                    <div class="alert-card" data-alert-id="{{ alert[0] }}">
+                        <div class="alert-info">
+                            <h4>{{ alert[3] }} - {{ alert[1] }}</h4>
+                            <p><strong>Description:</strong> {{ alert[4] }}</p>
+                            <p><strong>Time:</strong> {{ alert[2] }}</p>
+                            <p>
+                                <strong>Severity:</strong> 
+                                {% if alert[5] == 'high' %}
+                                    <span class="stat-badge badge-high">HIGH</span>
+                                {% elif alert[5] == 'medium' %}
+                                    <span class="stat-badge badge-medium">MEDIUM</span>
+                                {% else %}
+                                    <span class="stat-badge badge-low">LOW</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <button class="btn btn-success btn-sm" onclick="resolveAlert({{ alert[0] }})">✓ Resolve</button>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="padding: 20px; color: var(--accent-green);">✅ No active security alerts</p>
+            {% endif %}
+        </div>
+
+        <!-- Student Rankings -->
+        <div class="card" id="rankings">
+            <div class="card-header">
+                <h2 class="card-title">🏆 Student Rankings</h2>
+                <button class="btn btn-primary btn-sm" onclick="refreshRankings()">🔄 Refresh Rankings</button>
+            </div>
+            {% if rankings %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Student</th>
+                        <th>Academic Score</th>
+                        <th>Sentiment Score</th>
+                        <th>Final Score</th>
+                        <th>Sentiment Label</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody id="rankingsTable">
+                    {% for rank in rankings %}
+                    <tr {% if rank[5] == 1 %}class="rank-1"{% elif rank[5] == 2 %}class="rank-2"{% elif rank[5] == 3 %}class="rank-3"{% endif %}>
+                        <td><strong>#{{ rank[5] }}</strong></td>
+                        <td>{{ rank[1] }}</td>
+                        <td>{{ "%.1f"|format(rank[2]) }}</td>
+                        <td>{{ "%.1f"|format(rank[3]) }}</td>
+                        <td>{{ "%.1f"|format(rank[4]) }}</td>
+                        <td>
+                            {% if rank[6] == 'positive' %}
+                                <span class="stat-badge badge-positive">{{ rank[6].upper() }}</span>
+                            {% elif rank[6] == 'negative' %}
+                                <span class="stat-badge badge-negative">{{ rank[6].upper() }}</span>
+                            {% else %}
+                                <span class="stat-badge badge-neutral">{{ rank[6].upper() }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ rank[8] if rank|length > 8 else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="padding: 20px; color: var(--text-muted);">No rankings available.</p>
+            {% endif %}
+        </div>
+
+        <!-- All Users -->
+        <div class="card" id="users">
+            <div class="card-header">
+                <h2 class="card-title">👥 All Users</h2>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user[0] }}</td>
+                        <td>
+                            {% if user[2] == 'Admin' %}
+                                <span class="stat-badge badge-purple">ADMIN</span>
+                            {% elif user[2] == 'Teacher' %}
+                                <span class="stat-badge badge-positive">TEACHER</span>
+                            {% else %}
+                                <span class="stat-badge badge-cyan">STUDENT</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user[3] if user|length > 3 else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Feedback -->
+        <div class="card" id="feedback">
+            <div class="card-header">
+                <h2 class="card-title">💬 Teacher Feedback</h2>
+            </div>
+            {% if feedback %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Teacher</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fb in feedback %}
+                    <tr>
+                        <td>{{ fb[1] }}</td>
+                        <td>{{ fb[2] }}</td>
+                        <td>
+                            {% for i in range(fb[3]) %}⭐{% endfor %}
+                        </td>
+                        <td>{{ fb[4] }}</td>
+                        <td>{{ fb[5] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="padding: 20px; color: var(--text-muted);">No feedback submitted yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- AI Video Requests -->
+        <div class="card" id="videos">
+            <div class="card-header">
+                <h2 class="card-title">🎬 AI Video Requests</h2>
+                <button class="btn btn-primary btn-sm" onclick="loadVideoRequests()">🔄 Refresh</button>
+            </div>
+            <div id="videoRequestsList">
+                <p style="padding: 20px; color: var(--text-muted);">Loading video requests...</p>
+            </div>
+        </div>
+
+        <!-- Courses & Grades -->
+        <div class="card" id="courses">
+            <div class="card-header">
+                <h2 class="card-title">📚 Courses & Grades</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h3 style="font-size: 16px; margin-bottom: 15px; color: var(--accent-cyan);">Courses</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        {% for course in courses %}
+                        <li style="padding: 10px; background: var(--bg-card2); margin-bottom: 10px; border-radius: 8px;">
+                            <strong>{{ course[0] }}</strong> - {{ course[1] }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; margin-bottom: 15px; color: var(--accent-cyan);">Recent Grades</h3>
+                    <table style="font-size: 13px;">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Course</th>
+                                <th>Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grade in grades[:10] %}
+                            <tr>
+                                <td>{{ grade[1] }}</td>
+                                <td>{{ grade[2] }}</td>
+                                <td>
+                                    {% set grade_letter = grade[5]|upper if grade|length > 5 else 'N/A' %}
+                                    {% if grade_letter.startswith('A') %}
+                                        <span class="grade-a">{{ grade[5] if grade|length > 5 else 'N/A' }}</span>
+                                    {% elif grade_letter.startswith('B') %}
+                                        <span class="grade-b">{{ grade[5] if grade|length > 5 else 'N/A' }}</span>
+                                    {% elif grade_letter.startswith('C') %}
+                                        <span class="grade-c">{{ grade[5] if grade|length > 5 else 'N/A' }}</span>
+                                    {% else %}
+                                        <span class="grade-d">{{ grade[5] if grade|length > 5 else 'N/A' }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        async function resolveAlert(alertId) {
+            const response = await fetchJSON('/resolve_alert', {
+                method: 'POST',
+                body: JSON.stringify({ alert_id: alertId })
+            });
+
+            if (response && response.success) {
+                const alertCard = document.querySelector(`[data-alert-id="${alertId}"]`);
+                if (alertCard) {
+                    alertCard.style.transition = 'opacity 0.3s';
+                    alertCard.style.opacity = '0';
+                    setTimeout(() => alertCard.remove(), 300);
+                }
+                
+                // Update alert count
+                const alertCount = document.querySelectorAll('.alert-card').length - 1;
+                if (alertCount === 0) {
+                    document.getElementById('alertsContainer').innerHTML = 
+                        '<p style="padding: 20px; color: var(--accent-green);">✅ No active security alerts</p>';
+                }
+            } else {
+                alert('Failed to resolve alert');
+            }
+        }
+
+        async function refreshRankings() {
+            const response = await fetchJSON('/update_rankings', {
+                method: 'POST'
+            });
+
+            if (response && response.success) {
+                alert('Rankings updated successfully! Reloading page...');
+                window.location.reload();
+            } else {
+                alert('Failed to update rankings: ' + (response?.error || 'Unknown error'));
+            }
+        }
+
+        async function loadVideoRequests() {
+            const listContainer = document.getElementById('videoRequestsList');
+            listContainer.innerHTML = '<p style="padding: 20px; color: var(--text-muted);">Loading...</p>';
+            
+            const videos = await fetchJSON('/all_video_requests');
+            
+            if (!videos || videos.length === 0) {
+                listContainer.innerHTML = '<p style="padding: 20px; color: var(--text-muted);">No video requests yet.</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr><th>Student</th><th>Topic</th><th>Description</th><th>Status</th><th>Requested</th><th>Completed</th></tr></thead><tbody>';
+            
+            videos.forEach(video => {
+                let statusBadge = '';
+                if (video.status === 'completed') {
+                    statusBadge = '<span class="stat-badge badge-positive">✅ COMPLETED</span>';
+                } else if (video.status === 'processing') {
+                    statusBadge = '<span class="stat-badge badge-cyan">⏳ PROCESSING</span>';
+                } else if (video.status === 'failed') {
+                    statusBadge = '<span class="stat-badge badge-high">❌ FAILED</span>';
+                } else {
+                    statusBadge = '<span class="stat-badge badge-neutral">⏸️ PENDING</span>';
+                }
+
+                const description = video.description ? video.description.substring(0, 50) + (video.description.length > 50 ? '...' : '') : '<span style="color: var(--text-muted);">-</span>';
+                const completed = video.completed_at || '<span style="color: var(--text-muted);">-</span>';
+
+                html += `
+                    <tr>
+                        <td>${video.username}</td>
+                        <td><strong>${video.topic}</strong></td>
+                        <td>${description}</td>
+                        <td>${statusBadge}</td>
+                        <td>${video.requested_at}</td>
+                        <td>${completed}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            listContainer.innerHTML = html;
+        }
+
+        // Load video requests on page load
+        loadVideoRequests();
+    </script>
+</body>
+</html>
