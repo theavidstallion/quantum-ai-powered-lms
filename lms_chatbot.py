@@ -26,11 +26,16 @@ from langchain_core.runnables import RunnablePassthrough
 
 print("All libraries imported successfully!")
 
-# Replace this string with your real Groq API key
-GROQ_API_KEY = "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"
+# ⚠️ SECURITY NOTE: This file is OLD and NOT used by the Flask app
+# The real chatbot uses chatbot.py which loads from .env properly
+# Get your API key from: https://console.groq.com/keys
+# Then add to .env file: GROQ_API_KEY=gsk_your_key_here
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY not found in environment. Add it to .env file")
 os.environ["GROQ_API_KEY"] = GROQ_API_KEY
 
-print("Groq API key configured")
+print("Groq API key configured from environment")
 
 llm = ChatGroq(
     model_name="llama-3.1-8b-instant",

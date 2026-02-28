@@ -1,10 +1,21 @@
 import smtplib
 from email.mime.text import MIMEText
+import os
+from dotenv import load_dotenv
 
-# --- PUT YOUR DETAILS HERE ---
-SENDER_EMAIL = "your_real_email@gmail.com"
-SENDER_PASSWORD = "abcd efgh ijkl mnop"  # Your 16-letter App Password
-TARGET_EMAIL = "your_real_email@gmail.com" # Send to yourself
+# Load credentials from .env file (SECURE)
+load_dotenv()
+
+SENDER_EMAIL = os.getenv('SENDER_EMAIL')
+SENDER_PASSWORD = os.getenv('SENDER_PASSWORD')
+TARGET_EMAIL = os.getenv('SENDER_EMAIL')  # Send to yourself
+
+if not SENDER_EMAIL or not SENDER_PASSWORD:
+    print("❌ ERROR: Email credentials not found in .env file")
+    print("Add these lines to your .env file:")
+    print("SENDER_EMAIL=your_email@gmail.com")
+    print("SENDER_PASSWORD=your_app_password_here")
+    exit(1)
 
 try:
     print("1. Connecting to Gmail...")
