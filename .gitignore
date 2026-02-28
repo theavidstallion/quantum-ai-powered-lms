@@ -111,3 +111,10 @@ desktop.ini
 *.backup
 *_backup.*
 users_backup.db
+# ========================================
+# DOCKER (keep docker/ folder, ignore build artifacts)
+# ========================================
+# docker/ folder should be committed
+# docker-compose overrides for local dev
+docker-compose.override.yml
+# Docker build cache and volumes (handled by Docker)

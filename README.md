@@ -61,7 +61,40 @@ The system provides separate interfaces for students and administrators, with re
 
 **⚡ For experienced developers**: See [QUICKSTART.md](QUICKSTART.md) for a 5-minute setup guide.
 
+**� For Docker deployment**: See [DOCKER_GUIDE.md](DOCKER_GUIDE.md) for containerized setup (recommended for production).
+
 **📚 For detailed setup**: Follow the complete guide below.
+
+### Option 1: Docker (Recommended - One Command) 🐳
+
+```bash
+# Prerequisites: Docker Desktop installed
+# https://www.docker.com/products/docker-desktop
+
+# 1. Clone repository
+git clone https://github.com/your-username/quantum-lms.git
+cd quantum-lms/Quantum-
+
+# 2. Start with Docker (.env already configured)
+cd docker
+docker-compose up --build
+
+# Access at: http://127.0.0.1:5000
+# Login: admin / admin123
+
+# ✅ All dependencies installed automatically:
+#    - Python 3.12
+#    - FFmpeg 8.0+
+#    - Manim CE 0.20.1
+#    - LaTeX (texlive)
+#    - All pip packages from requirements.txt
+```
+
+👉 **See [DOCKER_GUIDE.md](DOCKER_GUIDE.md) for complete Docker documentation**
+
+---
+
+### Option 2: Manual Installation (Development)
 
 ```bash
 # 1. Clone the repository

@@ -350,6 +350,15 @@ def download_video(video_id):
     
     return send_file(video_path, as_attachment=True, download_name=f"{topic.replace(' ', '_')}.mp4")
 
+@app.route('/health')
+def health():
+    """Health check endpoint for Docker/monitoring"""
+    return {
+        'status': 'healthy',
+        'service': 'quantum-lms',
+        'timestamp': datetime.now().isoformat()
+    }
+
 @app.route('/logout')
 def logout():
     session.clear()

@@ -1,0 +1,84 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
+
+# Database (handled by volume)
+*.db
+*.db-journal
+
+# Output files (handled by volume)
+output/
+media/
+
+# Documentation drafts
+*.draft.md
+*.tmp.md
+
+# Environment files (will be passed via docker-compose)
+.env
+.env.local
+.env.*.local
+
+# Docker files (don't copy docker folder into itself)
+docker/
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Large dependencies (will be installed via pip)
+node_modules/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Security audit artifacts
+SECURITY_AUDIT.md
