@@ -159,6 +159,12 @@ RULES:
 6. NO text narration — audio handles it
 7. Use self.wait() to match audio timing
 
+⚠️ CRITICAL RESTRICTIONS:
+- DO NOT use SVGMobject, ImageMobject, or any external file references
+- DO NOT reference files like "assets/...", "images/...", etc.
+- ONLY use built-in Manim objects: Circle, Square, Rectangle, Line, Arrow, Text, MathTex, Dot, VGroup, Polygon, etc.
+- Create diagrams using geometric primitives and positioning
+
 {visual_guide}
 {formula_hints}'''
 
