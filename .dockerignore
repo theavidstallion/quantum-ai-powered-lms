@@ -1,0 +1,88 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
+
+# Database (handled by volume)
+*.db
+*.db-journal
+users.db
+quantum_lms.db
+
+# Output files (handled by volume) - CRITICAL: prevents 848MB transfer!
+output/
+media/
+
+# Documentation files (not needed in container)
+*.md
+!requirements.txt
+
+# Environment files (will be passed via docker-compose)
+.env.local
+.env.*.local
+
+# Docker folder excludes (but keep entrypoint.sh)
+docker/README.md
+docker/.dockerignore
+docker/start.bat
+docker/start.sh
+docker/stop.bat
+docker/stop.sh
+
+# Large dependencies (will be installed via pip)
+node_modules/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup

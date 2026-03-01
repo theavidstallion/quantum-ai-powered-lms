@@ -21,8 +21,8 @@ services:
       - ../.env
     
     volumes:
-      # Persist database
-      - ../quantum_lms.db:/app/quantum_lms.db
+      # Persist database (app uses users.db)
+      - ../users.db:/app/users.db
       # Persist video outputs
       - ../output:/app/output
       # Persist media files

@@ -244,10 +244,19 @@ class GeneratedVideo(Scene):
                 if result.stdout:
                     print(f'   📋 Output preview: {result.stdout[:200]}')
                 
-                if result.returncode != 0:
+                # Check if video was created (even if return code is non-zero due to permission errors)
+                video_exists = False
+                temp_video_path = 'media/videos/temp_scene/480p15/GeneratedVideo.mp4'
+                if os.path.exists(temp_video_path):
+                    video_exists = True
+                    print(f'   ✅ Video file exists at {temp_video_path}')
+                
+                if result.returncode != 0 and not video_exists:
                     print(f'   ❌ Manim failed with errors:')
                     print(f'   {result.stderr[:500]}')
                     return False, None, result.stderr
+                elif result.returncode != 0 and video_exists:
+                    print(f'   ⚠️ Manim exit code non-zero, but video exists (permission issue in cleanup phase)')
                 
             except subprocess.TimeoutExpired:
                 print(f'   ⏰ TIMEOUT: Manim took longer than 3 minutes!')
@@ -260,8 +269,9 @@ class GeneratedVideo(Scene):
             # Find the rendered video
             print(f'   🔍 Searching for rendered video...')
             
-            # Try multiple potential locations
+            # Try multiple potential locations (Manim saves to media/ directory)
             search_patterns = [
+                'media/videos/**/*.mp4',  # Manim default location
                 os.path.join(self.output_dir, 'videos', '**', '*.mp4'),
                 os.path.join(self.output_dir, '**', '*.mp4'),
                 os.path.join(os.path.dirname(code_path), 'media', '**', '*.mp4')

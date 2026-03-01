@@ -23,12 +23,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
     libxrender-dev \
     libgomp1 \
-    # LaTeX for Manim (optional, for complex math)
+    # LaTeX for Manim (required for MathTex rendering)
     texlive \
     texlive-latex-extra \
     texlive-fonts-extra \
     texlive-science \
     dvipng \
+    dvisvgm \
     # Cairo for Manim rendering
     libcairo2-dev \
     pkg-config \
@@ -60,8 +61,10 @@ RUN python -c "import manim; print(f'Manim {manim.__version__}')" && \
 COPY --chown=appuser:appuser .. /app/
 
 # Create necessary directories with proper permissions
+# Make sure appuser can write to /app for database creation
 RUN mkdir -p /app/output/videos /app/output/audio /app/media && \
-    chown -R appuser:appuser /app/output /app/media
+    chown -R appuser:appuser /app /app/output /app/media && \
+    chmod -R 755 /app/output /app/media
 
 # Switch to non-root user
 USER appuser
@@ -73,8 +76,8 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:5000/health', timeout=5)" || exit 1
 
-# Copy and set entrypoint script
-COPY --chown=appuser:appuser entrypoint.sh /app/
+# Copy and set entrypoint script (from docker/ folder since build context is parent dir)
+COPY --chown=appuser:appuser docker/entrypoint.sh /app/
 RUN chmod +x /app/entrypoint.sh
 
 ENTRYPOINT ["/app/entrypoint.sh"]

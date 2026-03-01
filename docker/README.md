@@ -40,7 +40,7 @@ docker run -d \
   --name quantum-lms \
   -p 5000:5000 \
   --env-file ../.env \
-  -v "$(pwd)/../quantum_lms.db:/app/quantum_lms.db" \
+  -v "$(pwd)/../users.db:/app/users.db" \
   -v "$(pwd)/../output:/app/output" \
   quantum-lms:latest
 
@@ -69,7 +69,7 @@ docker run -d \
 - **5000** - Flask web server
 
 ### Volumes (Data Persistence)
-- `quantum_lms.db` - SQLite database
+- `users.db` - SQLite database
 - `output/` - Generated videos and audio files
 - `media/` - Manim render cache
 
@@ -158,9 +158,9 @@ docker-compose up --build
 # Stop all containers accessing the database
 docker-compose down
 
-# Remove database lock
+# Remove database lock (if exists)
 cd ..
-rm quantum_lms.db-journal  # If exists
+rm users.db-journal  # If exists
 
 # Restart
 cd docker

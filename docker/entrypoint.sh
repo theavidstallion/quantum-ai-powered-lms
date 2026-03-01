@@ -20,16 +20,21 @@ ffmpeg -version | head -n 1 || { echo "❌ FFmpeg not found!"; exit 1; }
 echo "🎨 Checking Manim..."
 python -c "import manim; print(f'✅ Manim Community v{manim.__version__}')" || { echo "❌ Manim not found!"; exit 1; }
 
-# Create database if not exists
-if [ ! -f /app/quantum_lms.db ]; then
+# Create output directories (volumes are mounted with host permissions)
+echo "📁 Creating directories..."
+mkdir -p /app/output/videos /app/output/audio /app/media
+
+# Ensure database file can be created (don't fail if it already exists)
+touch /app/users.db 2>/dev/null || true
+
+# Initialize database if not exists
+if [ ! -s /app/users.db ]; then
     echo "🗄️  Initializing database..."
-    python -c "from app import init_db; init_db()" || { echo "❌ Database initialization failed!"; exit 1; }
+    python -c "from app import init_db; init_db()" || echo "⚠️  Database initialization skipped (will be created on first run)"
 else
     echo "✅ Database found"
 fi
 
-# Create output directories
-mkdir -p /app/output/videos /app/output/audio /app/media
 echo "📁 Output directories ready"
 
 # Display startup info

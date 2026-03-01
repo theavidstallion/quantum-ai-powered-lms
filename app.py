@@ -372,6 +372,8 @@ if __name__ == '__main__':
     # background video generation subprocess when files change
     # For development, you can manually restart after code changes
     app.run(
+        host='0.0.0.0',  # Bind to all interfaces (required for Docker)
+        port=5000,
         debug=True,
         use_reloader=False  # Disable auto-reload to prevent subprocess interruption
     )
